@@ -45,9 +45,32 @@ class SleepTrackerViewModel(
 
     private val nights = database.getAllNights()
 
+    // Converted nights to Spanned for displaying
     val nightsString = Transformations.map(nights) { nights ->
         formatNights(nights, application.resources)
     }
+
+    val startButtonVisible = Transformations.map(tonight){
+        null == it
+    }
+
+    val stopButtonVisible = Transformations.map(tonight){
+        null !== it
+    }
+
+    val clearButtonVisible = Transformations.map(nights){
+        it?.isNotEmpty()
+    }
+
+    private var _showSnackbarEvent = MutableLiveData<Boolean>()
+
+    val showSnackBarEvent: LiveData<Boolean>
+    get() = _showSnackbarEvent
+
+    fun doneShowingSnackbar(){
+        _showSnackbarEvent.value = false
+    }
+
 
     private val _navigateToSleepQuality = MutableLiveData<SleepNight>()
 
@@ -95,6 +118,8 @@ class SleepTrackerViewModel(
     fun onStopTracking() {
         uiScope.launch {
             val oldNight = tonight.value ?: return@launch
+
+            // Update the night in the Database to add the end time
             oldNight.endTimeMilli = System.currentTimeMillis()
             update(oldNight)
             _navigateToSleepQuality.value = oldNight
@@ -109,8 +134,13 @@ class SleepTrackerViewModel(
 
     fun onClear() {
         uiScope.launch {
+            // Clear the Database Table
             clear()
+
+            //And Clear tonight since it's no longer in the Database
             tonight.value = null
+
+            _showSnackbarEvent.value = true
         }
     }
 
