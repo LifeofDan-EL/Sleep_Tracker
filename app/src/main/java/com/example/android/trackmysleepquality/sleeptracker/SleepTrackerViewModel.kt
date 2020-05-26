@@ -132,6 +132,8 @@ class SleepTrackerViewModel(
         }
     }
 
+
+    // Called when the ViewModel is cleared
     fun onClear() {
         uiScope.launch {
             // Clear the Database Table
@@ -150,5 +152,16 @@ class SleepTrackerViewModel(
         }
     }
 
+    private val _navigateToSleepDataQuality = MutableLiveData<Long>()
+    val navigateToSleepDataQuality
+    get() = _navigateToSleepDataQuality
+
+    fun onSleepNightClicked(id: Long){
+        _navigateToSleepDataQuality.value = id
+    }
+
+    fun onSleepQualityNavigated() {
+        _navigateToSleepDataQuality.value = null
+    }
 }
 
